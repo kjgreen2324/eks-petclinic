@@ -30,27 +30,31 @@
 ## <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-original.svg" width="24"/> Kubernetes 구성
 ```bash
 eks-petclinic/
-├── cluster/
-│   └── eksctl-cluster.yaml         # eksctl로 생성한 클러스터 정의
-├── apps/
-│   ├── web/
-│   │   ├── web-deployment.yaml
-│   │   ├── web-service.yaml
-│   │   ├── Dockerfile
-│   │   └── httpd.conf
-│   └── was/
-│       ├── was-deployment.yaml
-│       ├── was-service.yaml
-│       └── Dockerfile
-├── ingress/
-│   └── ingress.yaml                # ALB Ingress(ACM/도메인은 아카이브 값)
-├── hpa/
-│   ├── hpa-web.yaml
-│   └── hpa-was.yaml
-├── karpenter/
-│   ├── ec2-nodeclass.yaml
-│   └── nodepool.yaml
-└── README.md
+├─ cluster/
+│  └─ eksctl-cluster.yaml        # eksctl로 생성한 EKS 클러스터 정의
+│
+├─ apps/                         # 애플리케이션 배포 리소스
+│  ├─ web/                       # Apache Reverse Proxy
+│  │  ├─ web-deployment.yaml     # web Deployment 
+│  │  ├─ web-service.yaml        # ClusterIP Service
+│  │  ├─ Dockerfile              # Apache + Proxy 설정 이미지
+│  │  └─ httpd.conf              # ProxyPass/ProxyPassReverse 설정
+│  │
+│  └─ was/                       # Tomcat + Petclinic
+│     ├─ was-deployment.yaml     # was Deployment 
+│     ├─ was-service.yaml        # ClusterIP Service
+│     └─ Dockerfile              # Petclinic + Tomcat 이미지
+│
+├─ ingress/
+│  └─ ingress.yaml               # ALB Ingress (ACM 인증서 설정으로 HTTPS 종단)
+│
+├─ hpa/
+│  ├─ hpa-web.yaml               # HPA (web, CPU 기반)
+│  └─ hpa-was.yaml               # HPA (was, CPU 기반)
+│
+├─ karpenter/
+│  ├─ ec2-nodeclass.yaml         # Karpenter NodeClass 정의 (EC2 프로비저닝 스펙)
+│  └─ nodepool.yaml              # Karpenter NodePool 정의 (스케일링 정책)
 ```
 ---
 
