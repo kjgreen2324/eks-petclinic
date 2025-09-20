@@ -1,6 +1,6 @@
 # Kubernetes(EKS)로 배포한 Petclinic
 
-☁️ Petclinic 애플리케이션을 AWS EKS에 배포하고, ALB Ingress / HPA / Karpenter를 적용한 구성의 아카이브입니다.
+☁️ Petclinic 애플리케이션을 AWS EKS에 배포하고, ALB Ingress / HPA / Karpenter를 적용한 구성의 아카이브입니다.  
 학습 및 실습 과정에서 사용한 매니페스트와 디렉토리 구조를 정리했습니다.
 
 ---
@@ -69,4 +69,3 @@ eks-petclinic/
 - 관련 레포
   - Terraform 3-Tier 인프라: (링크)
   - CI/CD: (추가 예정 혹은 범위 밖)
-  
