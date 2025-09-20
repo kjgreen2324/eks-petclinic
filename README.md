@@ -19,11 +19,11 @@
 ![Architecture](eks-archi.png)
 
 구성 요소:
-- **EKS + MNG**: 운영 단순화, 재현성 확보
+- **EKS(Managed Node Group)**: 관리형 노드 그룹으로 운영 단순화, 재현성 확보
 - **ALB Ingress**: HTTPS 종단 및 L7 라우팅
 - **HPA**: web/was 각각 CPU 기반 자동 확장
 - **Karpenter**: 급격한 부하 시 Node 레벨 자동 확장
-- **ECR/RDS**: 컨테이너 이미지 / 데이터베이스
+- **ECR/RDS**: 컨테이너 이미지 저장소 / 데이터베이스
 
 ---
 
