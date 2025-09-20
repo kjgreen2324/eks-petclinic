@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: njt-petclinic-web
+  namespace: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: njt-petclinic-web
+  template:
+    metadata:
+      labels:
+        app: njt-petclinic-web
+    spec:
+      containers:
+        - name: njt-petclinic-web
+          image: 906336681755.dkr.ecr.ap-northeast-2.amazonaws.com/njt-petclinic-web:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi

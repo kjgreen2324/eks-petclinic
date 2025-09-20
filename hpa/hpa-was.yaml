@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: njt-petclinic-was
+  namespace: was
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: njt-petclinic-was
+  minReplicas: 2
+  maxReplicas: 30
+  targetCPUUtilizationPercentage: 50
+
+
