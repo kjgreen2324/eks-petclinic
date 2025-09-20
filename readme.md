@@ -1,91 +1,72 @@
-# EKS Petclinic (EKS + HPA + Karpenter)
+# Kubernetes(EKS)로 배포한 Petclinic
 
-**Scope**  
-본 레포는 팀 프로젝트에서 제가 직접 수행한 **EKS 배포/운영 파트**를 아카이브한 것입니다.  
-**ALB Ingress / HPA / Karpenter**를 적용한 상태를 중심으로 정리했습니다.  
-> 참고: CI/CD(GitHub Actions/ArgoCD), Secrets Manager/CSI, Monitoring/DR은 **범위 밖**으로 제외했습니다.
+☁️ Petclinic 애플리케이션을 AWS EKS에 배포하고, ALB Ingress / HPA / Karpenter를 적용한 구성의 아카이브입니다.
+학습 및 실습 과정에서 사용한 매니페스트와 디렉토리 구조를 정리했습니다.
 
 ---
 
-## 1) Architecture
+## 📝 개요
 
-![arch](./arch-eks-petclinic.png)
-
-- 트래픽: **User → ALB(HTTPS) → `web`(Apache RP) → `was`(Tomcat/Spring Petclinic) → RDS**
-- 네임스페이스: `web`, `was`
-- 스케일링: **Pod = HPA**, **Node = Karpenter(선택 적용)**
-- 이미지는 **ECR** 사용
-
----
-
-## 2) 구성 요소(What)
-
-- **Cluster**: [`cluster/eksctl-cluster.yaml`](cluster/eksctl-cluster.yaml)  
-  - Endpoint: **Public + Private 병행**  
-  - **Managed Node Group** + **OIDC**  
-  - 기본 애드온(vpc-cni, kube-proxy, coredns, ebs-csi 등) 구성
-- **Ingress**: [`ingress/ingress.yaml`](ingress/ingress.yaml)  
-  - ALB Ingress Controller 전제(Helm 별도 설치)  
-  - ACM/도메인 값은 현재 비활성(아카이브 목적)
-- **Workloads**: `apps/web/*`, `apps/was/*`  
-  - `web`: Apache Reverse Proxy (Dockerfile + httpd.conf)  
-  - `was`: Tomcat 이미지에 Petclinic 배포 (Dockerfile)
-- **Autoscaling (Pod)**: [`hpa/hpa-web.yaml`](hpa/hpa-web.yaml), [`hpa/hpa-was.yaml`](hpa/hpa-was.yaml)  
-  - CPU 기반, `resources.requests`와 정합 유지
-- **Autoscaling (Node)**: [`karpenter/*`](karpenter)  
-  - `EC2NodeClass` + `NodePool`로 스파이크 대응/비용 최적화
+- EKS(eksctl) 기반 클러스터 구성 (Endpoint: Public + Private, Managed Node Group, OIDC)
+- ALB Ingress Controller 적용(Helm으로 별도 설치) + ACM/Route53로 HTTPS 종단
+- HPA(autoscaling/v2, CPU 기준) 및 Karpenter(Node 자동 확장) 적용
+- 애플리케이션 이미지는 ECR 사용, 네임스페이스 분리(web, was)
+- dev 환경 기준으로 정리
 
 ---
 
-## 3) 설계 결정(Why)
+## 🏛️ Architecture
+![Architecture](eks-archi.png)
 
-- **Endpoint Public+Private**: 운영 편의(퍼블릭)와 내부 경로 보호(프라이빗)의 균형  
-- **Managed Node Group**: 관리 단순화/재현성  
-- **ALB Ingress + ACM**: 표준 HTTPS 종단  
-- **HPA 기준(예: CPU 60%)**: `requests.cpu`와 일치하게 설계 → 예측 가능한 스케일아웃  
-- **Karpenter**: 급격한 부하/비용 최적화 대응(선택 적용)
-
----
-
-## 4) 레포 맵
-
-- `cluster/eksctl-cluster.yaml` : 클러스터 생성 정의  
-- `apps/web/*`, `apps/was/*` : 워크로드 매니페스트 + Dockerfile/httpd.conf  
-- `ingress/ingress.yaml` : ALB Ingress (ACM/host 값은 비활성)  
-- `hpa/*` : HPA 정의(web/was)  
-- `karpenter/*` : EC2NodeClass, NodePool
+구성 요소:
+- **EKS + MNG**: 운영 단순화, 재현성 확보
+- **ALB Ingress**: HTTPS 종단 및 L7 라우팅
+- **HPA**: web/was 각각 CPU 기반 자동 확장
+- **Karpenter**: 급격한 부하 시 Node 레벨 자동 확장
+- **ECR/RDS**: 컨테이너 이미지 / 데이터베이스
 
 ---
 
-## 5) 참고 커맨드(기록용 – 재현 목적 아님)
-
+## <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-original.svg" width="24"/> Kubernetes 구성
 ```bash
-# (A) 클러스터 생성
-eksctl create cluster -f cluster/eksctl-cluster.yaml
+eks-petclinic/
+├── cluster/
+│   └── eksctl-cluster.yaml         # eksctl로 생성한 클러스터 정의
+├── apps/
+│   ├── web/
+│   │   ├── web-deployment.yaml
+│   │   ├── web-service.yaml
+│   │   ├── Dockerfile
+│   │   └── httpd.conf
+│   └── was/
+│       ├── was-deployment.yaml
+│       ├── was-service.yaml
+│       └── Dockerfile
+├── ingress/
+│   └── ingress.yaml                # ALB Ingress(ACM/도메인은 아카이브 값)
+├── hpa/
+│   ├── hpa-web.yaml
+│   └── hpa-was.yaml
+├── karpenter/
+│   ├── ec2-nodeclass.yaml
+│   └── nodepool.yaml
+└── README.md
+```
+---
 
-# (B) AWS Load Balancer Controller (별도 설치: Helm + IRSA)
-eksctl create iamserviceaccount \
-  --cluster <CLUSTER_NAME> \
-  --namespace kube-system \
-  --name aws-load-balancer-controller \
-  --attach-policy-arn <ALBC_POLICY_ARN> \
-  --approve
-helm repo add eks https://aws.github.io/eks-charts
-helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  -n kube-system \
-  --set clusterName=<CLUSTER_NAME> \
-  --set region=ap-northeast-2 \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller
+### 🗒️ 메모
+- **엔드포인트 구성**: Public + Private 병행(운영 편의성과 접근 제어 균형)
+- **ALB Controller 설치**: 클러스터 YAML이 아닌 Helm + IRSA로 별도 설치
+- **metrics-server**: EKS Add-on(또는 Helm)으로 구성
+- **HPA 기준**: resources.requests와 일치하도록 CPU 기반 타깃(예: 60%) 설정
+- **이미지 태그**: :latest 지양, v1.0.0-<sha> 등 불변 태그 권장
 
-# (C) 워크로드/인그레스/HPA/카펜터 적용
-kubectl apply -f apps/web/
-kubectl apply -f apps/was/
-kubectl apply -f ingress/ingress.yaml
-kubectl apply -f hpa/
-kubectl apply -f karpenter/
+---
 
-# (D) 확인
-kubectl get ingress -n web
-kubectl get hpa -A
-kubectl get nodes -o wide
+## 📎 참고사항
+- 종료된 학습/아카이브용 매니페스트이며, 일부 값(ACM ARN/도메인/ECR 경로 등)은 현재 비활성입니다.
+- 구조 참고 및 기록 목적이며, 실제 운영 계정 정보는 포함하지 않습니다.
+- 관련 레포
+  - Terraform 3-Tier 인프라: (링크)
+  - CI/CD: (추가 예정 혹은 범위 밖)
+  
