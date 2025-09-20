@@ -7,11 +7,11 @@
 
 ## 📝 개요
 
-- EKS(eksctl) 기반 클러스터 구성 (Endpoint: Public + Private, Managed Node Group, OIDC)
-- ALB Ingress Controller 적용(Helm으로 별도 설치) + ACM/Route53로 HTTPS 종단
-- HPA(autoscaling/v2, CPU 기준) 및 Karpenter(Node 자동 확장) 적용
-- 애플리케이션 이미지는 ECR 사용, 네임스페이스 분리(web, was)
-- dev 환경 기준으로 정리
+- EKS(eksctl) 클러스터 구성 – 클러스터 엔드포인트 접근: Public + Private, Managed Node Group
+- Pod 자격증명(권한 부여) – ALB Controller = IRSA(OIDC), Karpenter = EKS Pod Identity (podIdentityAssociations)
+- ALB Ingress Controller(Helm 별도 설치) + ALB에서 TLS 종료(ACM 인증서), Route 53으로 도메인 라우팅
+- HPA(CPU 기반) 적용, Karpenter로 노드 자동 확장
+- 이미지: ECR, 네임스페이스: web, was
 
 ---
 
