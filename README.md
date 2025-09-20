@@ -70,6 +70,10 @@ eks-petclinic/
 ## 📎 참고사항
 - 종료된 학습/아카이브용 매니페스트이며, 일부 값(ACM ARN/도메인/ECR 경로 등)은 현재 비활성입니다.
 - 구조 참고 및 기록 목적이며, 실제 운영 계정 정보는 포함하지 않습니다.
-- 관련 레포
-  - Terraform 3-Tier 인프라: (링크)
-  - CI/CD: (추가 예정 혹은 범위 밖)
+- **metrics-server**: eksctl 클러스터 정의에서 관리형 Add-on으로 활성화
+- **HPA 기준치**: web=60%, was=50% (테스트 목적)
+- **이미지 태그**: 현재 :latest 사용 (실습 단순화 목적)
+
+### 관련 레포
+- [Terraform 3-Tier 인프라](https://github.com/kjgreen2324/terraform-petclinic)
+
