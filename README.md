@@ -58,15 +58,6 @@ eks-petclinic/
 ```
 ---
 
-### 🗒️ 메모
-- **엔드포인트 구성**: Public + Private 병행(운영 편의성과 접근 제어 균형)
-- **ALB Controller 설치**: 클러스터 YAML이 아닌 Helm + IRSA로 별도 설치
-- **metrics-server**: EKS Add-on(또는 Helm)으로 구성
-- **HPA 기준**: resources.requests와 일치하도록 CPU 기반 타깃(예: 60%) 설정
-- **이미지 태그**: :latest 지양, v1.0.0-<sha> 등 불변 태그 권장
-
----
-
 ## 📎 참고사항
 - 종료된 학습/아카이브용 매니페스트이며, 일부 값(ACM ARN/도메인/ECR 경로 등)은 현재 비활성입니다.
 - 구조 참고 및 기록 목적이며, 실제 운영 계정 정보는 포함하지 않습니다.
